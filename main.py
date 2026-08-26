@@ -6,21 +6,24 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-# ضع المفتاح النصي الذي نسخته من Google AI Studio بين القوسين
-GEMINI_API_KEY = "AQ.Ab8RN6LjHEVJCFmNm4zNm1eIXxXiyswhfJT7PO9nxLcBPU7CAQ"
+# تم وضع المفتاح الخاص بك كما ظهر في أمر cURL
+API_KEY = "AQ.Ab8RN6JUcQgDE7Zs7MjQBufhAc-j0Mmnh5OhT0U5rg_7_816tA"
 
 class ContentRequest(BaseModel):
     topic: str
 
 @app.post("/generate")
 def generate_content(req: ContentRequest):
-    if not GEMINI_API_KEY or GEMINI_API_KEY == "ألصق_مفتاح_API_هنا":
-        return {"result": f"✨ تم استلام موضوعك: '{req.topic}'.\n\n(يرجى استبدال نص المفتاح بـ API Key الحقيقي داخل main.py)."}
-
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
-    headers = {"Content-Type": "application/json"}
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+    
+    # إرسال المفتاح عبر الـ Header الخاص بـ Google
+    headers = {
+        "Content-Type": "application/json",
+        "X-goog-api-key": API_KEY
+    }
+    
     payload = {
-        "contents": [{"parts": [{"text": f"اكتب قصصاً أو محتوى مفصلاً وإبداعياً باللغة العربية حول: {req.topic}"}]}]
+        "contents": [{"parts": [{"text": f"اكتب محتوى إبداعي ومفصل باللغة العربية حول: {req.topic}"}]}]
     }
 
     try:
@@ -56,7 +59,7 @@ def home():
         <div class="card">
             <h1>AI Content Manager</h1>
             <p style="color:#94a3b8; font-size:0.9rem;">أدخل الموضوع لتوليد النص بواسطة Gemini AI</p>
-            <input type="text" id="topic" placeholder="مثال: قصة خيالية أو واقعية...">
+            <input type="text" id="topic" placeholder="أدخل أي موضوع هنا...">
             <button onclick="generate()">توليد المحتوى</button>
             <div id="output"></div>
         </div>
@@ -66,7 +69,7 @@ def home():
                 if(!topic) return alert('يرجى كتابة موضوع أولاً');
                 const out = document.getElementById('output');
                 out.style.display = 'block';
-                out.innerText = '⏳ جاري كتابة المحتوى بواسطة الذكاء الاصطناعي...';
+                out.innerText = '⏳ جاري توليد النص بواسطة الذكاء الاصطناعي...';
                 const res = await fetch('/generate', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
