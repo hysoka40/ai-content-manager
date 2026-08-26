@@ -1,4 +1,3 @@
-import os
 import json
 import urllib.request
 from fastapi import FastAPI
@@ -7,22 +6,22 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-# قراءة المفتاح من Vercel
-API_KEY = os.environ.get("GEMINI_API_KEY", "")
+# تم وضع المفتاح الخاص بك كما ظهر في أمر cURL
+API_KEY = "AQ.Ab8RN6JUcQgDE7Zs7MjQBufhAc-j0Mmnh5OhT0U5rg_7_816tA"
 
 class ContentRequest(BaseModel):
     topic: str
 
 @app.post("/generate")
 def generate_content(req: ContentRequest):
-    if not API_KEY:
-        return {"result": "لم يتم العثور على مفتاح API. يرجى التأكد من إضافة GEMINI_API_KEY في Vercel."}
-
     url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+    
+    # إرسال المفتاح عبر الـ Header الخاص بـ Google
     headers = {
         "Content-Type": "application/json",
         "X-goog-api-key": API_KEY
     }
+    
     payload = {
         "contents": [{"parts": [{"text": f"اكتب محتوى إبداعي ومفصل باللغة العربية حول: {req.topic}"}]}]
     }
