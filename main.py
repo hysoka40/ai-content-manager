@@ -7,7 +7,7 @@ from pydantic import BaseModel
 app = FastAPI()
 
 # ضع المفتاح النصي الذي نسخته من Google AI Studio بين القوسين
-GEMINI_API_KEY = "AQ.Ab8RN6J7SUjqGs3YqzvmfcYEP2f9MKJJ0n5hI_SP4Dt3qV_v2A"
+GEMINI_API_KEY = "AQ.Ab8RN6LjHEVJCFmNm4zNm1eIXxXiyswhfJT7PO9nxLcBPU7CAQ"
 
 class ContentRequest(BaseModel):
     topic: str
