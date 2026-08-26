@@ -1,12 +1,9 @@
 import os
+import json
+import urllib.request
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-import google.generativeai as genai
-
-# إعداد مفتاح API الخاص بـ Gemini
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "ضع_مفتاح_الـ_API_هنا")
-genai.configure(api_key=GEMINI_API_KEY)
 
 app = FastAPI()
 
@@ -15,11 +12,25 @@ class ContentRequest(BaseModel):
 
 @app.post("/generate")
 def generate_content(req: ContentRequest):
+    api_key = os.environ.get("GEMINI_API_KEY", "")
+    
+    # في حال لم يتم ضبط المفتاح بعد
+    if not api_key:
+        return {"result": f"✨ تم استلام موضوعك: '{req.topic}'.\n\n(للتوليد التلقائي عبر Gemini، يرجى إضافة GEMINI_API_KEY في إعدادات Vercel)."}
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    headers = {"Content-Type": "application/json"}
+    payload = {
+        "contents": [{"parts": [{"text": f"اكتب محتوى إبداعي ومفصل باللغة العربية حول: {req.topic}"}]}]
+    }
+
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        prompt = f"اكتب محتوى إبداعي ومفصل حول الموضوع التالي: {req.topic}"
-        response = model.generate_content(prompt)
-        return {"result": response.text}
+        req_data = json.dumps(payload).encode("utf-8")
+        request = urllib.request.Request(url, data=req_data, headers=headers)
+        with urllib.request.urlopen(request) as response:
+            res_json = json.loads(response.read().decode("utf-8"))
+            generated_text = res_json["candidates"][0]["content"]["parts"][0]["text"]
+            return {"result": generated_text}
     except Exception as e:
         return {"result": f"حدث خطأ أثناء الاتصال بالذكاء الاصطناعي: {str(e)}"}
 
@@ -46,7 +57,7 @@ def home():
         <div class="card">
             <h1>AI Content Manager</h1>
             <p style="color:#94a3b8; font-size:0.9rem;">أدخل الموضوع لتوليد النص بواسطة Gemini AI</p>
-            <input type="text" id="topic" placeholder="مثال: قصة خيالية عن رائد فضاء...">
+            <input type="text" id="topic" placeholder="مثال: قصة خيالية أو خطة تسويقية...">
             <button onclick="generate()">توليد المحتوى</button>
             <div id="output"></div>
         </div>
@@ -56,7 +67,7 @@ def home():
                 if(!topic) return alert('يرجى كتابة موضوع أولاً');
                 const out = document.getElementById('output');
                 out.style.display = 'block';
-                out.innerText = '⏳ جاري كتابة المحتوى بواسطة الذكاء الاصطناعي...';
+                out.innerText = '⏳ جاري المعالجة...';
                 const res = await fetch('/generate', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
