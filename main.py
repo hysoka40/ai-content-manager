@@ -1,4 +1,3 @@
-import os
 import json
 import urllib.request
 from fastapi import FastAPI
@@ -7,21 +6,21 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
+# ضع المفتاح النصي الذي نسخته من Google AI Studio بين القوسين
+GEMINI_API_KEY = "ألصق_مفتاح_API_هنا"
+
 class ContentRequest(BaseModel):
     topic: str
 
 @app.post("/generate")
 def generate_content(req: ContentRequest):
-    api_key = os.environ.get("GEMINI_API_KEY", "")
-    
-    # في حال لم يتم ضبط المفتاح بعد
-    if not api_key:
-        return {"result": f"✨ تم استلام موضوعك: '{req.topic}'.\n\n(للتوليد التلقائي عبر Gemini، يرجى إضافة GEMINI_API_KEY في إعدادات Vercel)."}
+    if not GEMINI_API_KEY or GEMINI_API_KEY == "ألصق_مفتاح_API_هنا":
+        return {"result": f"✨ تم استلام موضوعك: '{req.topic}'.\n\n(يرجى استبدال نص المفتاح بـ API Key الحقيقي داخل main.py)."}
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
     headers = {"Content-Type": "application/json"}
     payload = {
-        "contents": [{"parts": [{"text": f"اكتب محتوى إبداعي ومفصل باللغة العربية حول: {req.topic}"}]}]
+        "contents": [{"parts": [{"text": f"اكتب قصصاً أو محتوى مفصلاً وإبداعياً باللغة العربية حول: {req.topic}"}]}]
     }
 
     try:
@@ -57,7 +56,7 @@ def home():
         <div class="card">
             <h1>AI Content Manager</h1>
             <p style="color:#94a3b8; font-size:0.9rem;">أدخل الموضوع لتوليد النص بواسطة Gemini AI</p>
-            <input type="text" id="topic" placeholder="مثال: قصة خيالية أو خطة تسويقية...">
+            <input type="text" id="topic" placeholder="مثال: قصة خيالية أو واقعية...">
             <button onclick="generate()">توليد المحتوى</button>
             <div id="output"></div>
         </div>
@@ -67,7 +66,7 @@ def home():
                 if(!topic) return alert('يرجى كتابة موضوع أولاً');
                 const out = document.getElementById('output');
                 out.style.display = 'block';
-                out.innerText = '⏳ جاري المعالجة...';
+                out.innerText = '⏳ جاري كتابة المحتوى بواسطة الذكاء الاصطناعي...';
                 const res = await fetch('/generate', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
