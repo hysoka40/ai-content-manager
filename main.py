@@ -1,6 +1,6 @@
-from fastapi import FastAPI
-import uvicorn
 import os
+import uvicorn
+from fastapi import FastAPI
 
 app = FastAPI()
 
@@ -9,5 +9,9 @@ def read_root():
     return {"status": "success", "message": "AI Content Manager is live!"}
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
+    port_env = os.environ.get("PORT", "8000")
+    try:
+        port = int(port_env)
+    except ValueError:
+        port = 8000
+    uvicorn.run(app, host="0.0.0.0", port=port)
